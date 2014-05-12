@@ -1,0 +1,5 @@
+*.pyc
+/1-Preprocessing/NSF/*
+/1-Preprocessing/nGramInput/*
+/3-Postprocessing/frames/*
+/3-Postprocessing/*.mp4
