@@ -31,6 +31,7 @@
 """
 
 # Import modules
+import os; # For OS directory/file handling
 import pickle; # For reading binary file created by scraper
 import datetime # For processing dates
 import re # Regular expressions for removing black listed words
@@ -41,10 +42,13 @@ import string # For parsing output string of text2ngram
 import operator # For sorting class arrays
 
 # Options
-win = 180; # Days to average articles over
-lap = 60; # Overlap in windows 
+win = 90; # Days to average articles over
+lap = 30; # Overlap in windows 
+topN = 500; # Number of most frequent words to use in final table
+minFreq = 2; # Minimum frequency with which a word must show up to be counted
 absCount = False # Generate ngrams based on absolute count or relative frequency
-topN = 1000; # Number of most frequent words to use in final table
+
+# Debugging/advanced options
 scraperOutFN = 'article_data.out'
 createBinFiles = True # Set to false for debugging
 
@@ -89,6 +93,15 @@ articles = sorted(articles, key=operator.attrgetter('date')); # Sort list by old
 dateS = articles[0].date; # First article date
 # dateS = datetime.datetime.strptime('19500101','%Y%m%d'); # Use a different starting date#
 dateE = articles[-1].date; # Last article date
+
+# Create output directory if required
+if not os.path.exists('./nGramInput/'):
+	os.makedirs('./nGramInput/')
+else:
+	# Removes files from a directory matching a pattern
+	for f in os.listdir('./nGramInput/'):
+		if re.search('.*', f):
+			os.remove(os.path.join('./nGramInput/', f))	
 
 # Prep for separating articles into date-based bins
 dateSk = dateS; # Start date in current date-window
@@ -169,7 +182,7 @@ for fN in range(0,len(fName)):
 		p.kill()
 		p = None
 		
-	p = subprocess.Popen(["text2ngram", "-n1", "-m1", "-f10", \
+	p = subprocess.Popen(["text2ngram", "-n1", "-m1", "-f%d"%minFreq, \
 			fName[fN]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	out,err = p.communicate()
 	out = out.split('\r\n');

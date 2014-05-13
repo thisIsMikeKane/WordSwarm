@@ -77,8 +77,6 @@ from pygame.locals import * # Some parts of the PyGame framework to import local
 from wsWordObj import * # Module with a class for representing words
 from wsNGrams  import * # Module for storing nGram time histories
 
-import pdb, gc, objgraph
-
 class WordSwarm (Framework):
 
 	# Settings
@@ -95,7 +93,7 @@ class WordSwarm (Framework):
 	wordHue = (-1, -1)
 	
 	# Size of words (m)
-	maxSize = 1
+	maxSize = 5
 	minSize = 0.1
 	
 	# Sun strength
@@ -243,7 +241,7 @@ class WordSwarm (Framework):
 	
 		color = (255,255,255)
 		dateTxt = freetype.Font(None)
-		dateTxt.size = 18
+		dateTxt.size = 24
 		dateTxt.fgcolor = color
 	
 		top = (int(self.screen.get_height()*0.0625),int(self.screen.get_height()*0.0625))

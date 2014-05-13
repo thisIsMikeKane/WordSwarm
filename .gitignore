@@ -1,5 +1,6 @@
 *.pyc
 /1-Preprocessing/NSF/*
 /1-Preprocessing/nGramInput/*
+/2-WordSwarm/*.csv
 /3-Postprocessing/frames/*
 /3-Postprocessing/*.mp4
