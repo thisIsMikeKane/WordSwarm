@@ -32,12 +32,14 @@ class wsNGrams:
 	counts = [] # Matrix of word counts (or frequencies) 
 		# [word index][Date index]
 	dates = [] # List of dates
+	areColors = False
+	colors = None
 	nDates = 0 # Total number of dates
 	nWords = 0 # Total number of words
 	maxCount = 0 # Count of the word with the highest count
 		# in any given date-bin
 	
-	def __init__(self,fName, startDateStr, endDateStr):
+	def __init__(self,fName, startDateStr, endDateStr, topN):
 	
 		if startDateStr is None:
 			startdate = datetime.datetime.strptime('00010101','%Y%m%d');
@@ -56,6 +58,14 @@ class wsNGrams:
 			for row in fNgrams: # Process each row in CSV file
 			
 				if rowN == 0: # Import dates
+					if 'h' in row[0]:
+						print('Using hues from CSV')
+						self.colors = []
+						self.areColors = 'hue'
+					elif 'c' in row[0]:
+						print('Using colors from CSV')
+						self.colors = []
+						self.areColors = 'rgb'
 				
 					startdateK = 0;
 					for dateStr in row[1:]:
@@ -80,14 +90,29 @@ class wsNGrams:
 				elif rowN>0: # Import words and counts
 				
 					self.counts.append([0]*self.nDates)
-					self.words.append(row[0])
+					
+					if self.areColors == 'hue': # Hue provided by CSV
+						self.words.append(row[0][2::])
+						self.colors.append(float(int(row[0][0:2],16)))
+					
+					elif self.areColors == 'rgb': # RGB color provided by CSV
+						self.words.append(row[0][6::])
+						self.colors.append([
+								float(int(row[0][0:2],16)), 
+								float(int(row[0][2:4],16)), 
+								float(int(row[0][4:6],16)) ])
+					
+					else:
+						self.words.append(row[0]) # No color provided by CSV
 					
 					for countN in range(startdateK, enddateK+1):
 						count = float(row[countN+1])
-						self.counts[rowN-2][countN-startdateK] = count
+						self.counts[rowN-1][countN-startdateK] = count
 						if count>self.maxCount:
 							self.maxCount = count
 					
 				rowN = rowN+1
+				if rowN > topN:
+					break
 	
 		self.nWords = len(self.words)

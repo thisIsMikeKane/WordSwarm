@@ -26,7 +26,24 @@
 				The default value is 2. Typically between 5-10.
 				Tweak this parameter until the wordSwarm is large 
 				enough to see, yet doesn't overflow the screen.
-
+		-c <HexHue1_HexHue2>
+			: Define the two hues that all words will be randomly colored
+				with. Values are in hexdecimal between 0-255
+				Example: "-c AA_00" will use red and blue hues
+		-b <Start Date in YYYYMMDD>
+			: If records in CSV start before what you would like to display
+				then specify the desired start date
+				Example: "-b 19900101" will start the animation on
+				January 1st, 1990
+		-e <End Date in YYYYMMDD>
+			: If records in CSV go beyond what you would like to display
+				then specify the desired end date
+				Example "-e 20131231" will end the animation on
+				December 31st, 2013
+		-n <topN>
+			: Display only the first topN words in the CSV file
+				Example "-n 250" will plot up to only 250 words 
+				even if the CSV file has >250 words
 	
 	This file is part of WordSwarm.
 
@@ -86,11 +103,14 @@ class WordSwarm (Framework):
 	saveFolder = '../3-Postprocessing/frames/'
 	
 	frameN = 0;
+	shapes = [];
+	fixtures = [];
 	bodies = [];
 	joints = [];
 	wordObjs = []
 	sun = []
 	wordHue = (-1, -1)
+	topN = sys.maxint
 	
 	# Size of words (m)
 	maxSize = 5
@@ -111,17 +131,17 @@ class WordSwarm (Framework):
 		# Parse arguments
 		try:
 			opts, args = getopt.getopt(argv,
-					"hst:i:d:m:c:b:e:",["ifile="])
+					"hst:i:d:m:c:b:e:n:",["ifile="])
 		except getopt.GetoptError:
 			print 'Invalid argument'
 			print(argv)
 			print('try:')
-			print 'wordSwarm.py -s -t <title> -i <inputfile> -d <outputFolder> -m <maxWordHeight> -c <HexHue1_HexHue2> -b <startDate YYYYMMDD> -e <endDate YYYYMMDD>'
+			print 'wordSwarm.py -n <topN] -s -t <title> -i <inputfile> -d <outputFolder> -m <maxWordHeight> -c <HexHue1_HexHue2> -b <startDate YYYYMMDD> -e <endDate YYYYMMDD>'
 			sys.exit(2)
 			
 		for opt, arg in opts:
 			if opt == '-h':
-				print 'wordSwarm.py -s -t <title> -i <inputfile> -d <outputFolder> -m <maxWordHeight> -c <HexHue1_HexHue2> -b <startDate YYYYMMDD> -e <endDate YYYYMMDD>'
+				print 'wordSwarm.py -n <topN] -s -t <title> -i <inputfile> -d <outputFolder> -m <maxWordHeight> -c <HexHue1_HexHue2> -b <startDate YYYYMMDD> -e <endDate YYYYMMDD>'
 				sys.exit()
 			elif opt in ("-i", "--ifile"):
 			
@@ -157,6 +177,10 @@ class WordSwarm (Framework):
 			elif opt in ("-e"):
 				endDateStr = arg
 				print('Ending animation on %s' % endDateStr)
+				
+			elif opt in ("-n"):
+				self.topN = int(arg)
+				print('Displaying only the first %d results in csv' % self.topN)
 		
 		# Create output directory if required
 		if self.saveFrames:
@@ -166,49 +190,53 @@ class WordSwarm (Framework):
 				self.purge(self.saveFolder, '.*')
 		
 		# Create ngrams database
-		self.nGrams = wsNGrams(self.csvName, startDateStr, endDateStr)
-		
-		# The centre of the universe
-		self.sun.append(self.world.CreateStaticBody(
-				position=b2Vec2(random.uniform(
-						-45,65),0)));		
+		self.nGrams = wsNGrams(self.csvName, startDateStr, endDateStr, self.topN)	
 
 		box_half_size = (0.5, 0.5)
 
 		# Place word objects
+		self.shapes = [None] * self.nGrams.nWords
+		self.fixtures = [None] * self.nGrams.nWords
+		self.bodies = [None] * self.nGrams.nWords
+		self.joints = [None] * self.nGrams.nWords
+		self.wordObjs = [None] * self.nGrams.nWords;
 		for word_k in range(0, self.nGrams.nWords):
 		
 			# The centre of the universe
 			self.sun.append(self.world.CreateStaticBody(
 					position=b2Vec2(random.uniform(
 							-45,65),0)));		
-		
+			
 			# Create word object
-			self.wordObjs.append(wsWordObj(
-					self.nGrams.words[word_k], self.wordHue));
-						
-			# Determine initial box size
-			self.bodies.append(self.world.CreateDynamicBody(
-				position=(random.uniform(-60,70),
-						random.uniform(-40,40)),
-				fixtures=b2FixtureDef(
-						shape=b2PolygonShape(box=(box_half_size[0] / self.wordObjs[-1].paddedAR,box_half_size[0])))
-				))
+			if self.nGrams.areColors == 'hue':
+				self.wordObjs[word_k] = wsWordObj(
+						self.nGrams.words[word_k], [self.nGrams.colors[word_k]])
+			elif self.nGrams.areColors == 'rgb':
+				self.wordObjs[word_k] = wsWordObj(
+						self.nGrams.words[word_k], self.nGrams.colors[word_k])
+			else:
+				self.wordObjs[word_k] = wsWordObj(
+						self.nGrams.words[word_k], self.wordHue)
+			
+			# Create body for word
+			self.bodies[word_k] = self.world.CreateDynamicBody(
+				position=(random.uniform(-60,70), random.uniform(-40,40) ))
+				
+			# Add fixture to body
+			self.fixtures[word_k] = self.bodies[word_k].CreateFixture(
+					b2FixtureDef( shape = b2PolygonShape( box = (
+					box_half_size[0] / self.wordObjs[word_k].paddedAR,box_half_size[0]))))
 				
 			# Link word object to sun
-			self.joints.append(
-				self.world.CreateJoint(
+			self.joints[word_k] = self.world.CreateJoint(
 					b2DistanceJointDef(
 						frequencyHz = self.frequency,
 						dampingRatio = self.damping,
-						bodyA=self.sun[len(self.bodies)],
-						bodyB=self.bodies[-1],
+						bodyA=self.sun[word_k],
+						bodyB=self.bodies[word_k],
 						localAnchorA=(0,0),
 						localAnchorB=(0,0),
-						length = 0.5
-					)
-				) 
-			)
+						length = 0.5 ))
 
 	# Removes files from a directory matching a pattern
 	def purge(self, dir, pattern):
@@ -238,14 +266,16 @@ class WordSwarm (Framework):
 	# Draw the date progress bar
 	#@TODO Scale text and line weight with screen size
 	def Draw_Date(self, date_k):
+		months = ['','Jan','Feb','Mar','Apr','May','Jun',
+				'Jul','Aug','Sep','Oct','Nov','Dec']
 	
 		color = (255,255,255)
 		dateTxt = freetype.Font(None)
 		dateTxt.size = 24
 		dateTxt.fgcolor = color
 	
-		top = (int(self.screen.get_height()*0.0625),int(self.screen.get_height()*0.0625))
-		bot = (int(self.screen.get_height()*0.0625),int(self.screen.get_height()*(1-0.0625)))
+		top = (int(self.screen.get_height()*0.075),int(self.screen.get_height()*0.125))
+		bot = (int(self.screen.get_height()*0.075),int(self.screen.get_height()*(1-0.125)))
 		
 		self.screen.blit(dateTxt.render(self.name)[0], 
 				(self.screen.get_height()*0.03, self.screen.get_height()*0.03))
@@ -253,19 +283,30 @@ class WordSwarm (Framework):
 		pygame.draw.line(self.screen, color, top, bot, 4)
 		pygame.draw.line(self.screen, color, (top[0]-4, top[1]), (top[0]+4, top[1]), 4)
 		pygame.draw.line(self.screen, color, (bot[0]-4, bot[1]), (bot[0]+4, bot[1]), 4)
-		
-
-		self.screen.blit(dateTxt.render(self.nGrams.dates[0].strftime('%b %Y'))[0], 
-				(top[0]+20, top[1]-6))
-		self.screen.blit(dateTxt.render(self.nGrams.dates[-1].strftime('%b %Y'))[0], 
-				(bot[0]+20, bot[1]-6))
+				
+		self.screen.blit(dateTxt.render('%s %04d'%(
+				months[self.nGrams.dates[0].month],
+				self.nGrams.dates[0].year))[0], 
+				(self.screen.get_height()*0.03, top[1]-40))
+				
+		self.screen.blit(dateTxt.render('%s %04d'%(
+				months[self.nGrams.dates[-1].month],
+				self.nGrams.dates[-1].year))[0], 
+				(self.screen.get_height()*0.03, bot[1]+20))
 		
 		progress = ( (self.nGrams.dates[date_k] - self.nGrams.dates[0]).total_seconds() /
 				(self.nGrams.dates[-1] - self.nGrams.dates[0]).total_seconds() )
 		pos = (top[0] + 1, int((bot[1] - top[1]) * progress + top[1]) )
 		pygame.draw.circle(self.screen, color, pos, 8)
-		self.screen.blit(dateTxt.render(self.nGrams.dates[date_k].strftime('%b %Y'))[0], 
-				(pos[0]+20, pos[1]-6))
+				
+		self.screen.blit(dateTxt.render('%s %04d'%(
+				months[self.nGrams.dates[date_k].month],
+				self.nGrams.dates[date_k].year))[0], 
+				(pos[0]+20, pos[1]-10))
+				
+		logo = pygame.transform.smoothscale(pygame.image.load(
+				'../wordSwarm_light.png').convert_alpha(), (187, 99))
+		self.screen.blit(logo, (1720,960))
 				
 	def Step(self, settings):
 				
@@ -318,37 +359,11 @@ class WordSwarm (Framework):
 				
 				self.wordObjs[word_k].boxSize = self.convertWorld2Screen( size )
 				
-			# Destroy old body	
-			pos = self.bodies[word_k].position;
-			vel = self.bodies[word_k].linearVelocity;			
-			self.world.DestroyJoint(self.joints[word_k])
-			self.bodies[word_k].DestroyFixture(self.bodies[word_k].fixtures[0])
-			self.world.DestroyBody(self.bodies[word_k])
-			self.joints[word_k] = None
-			self.bodies[word_k] = None
-							
-			# Place new body
-			self.bodies[word_k] = self.world.CreateDynamicBody(
-					position=pos,
-					linearVelocity=vel,
-					mass=(4*newSize[0]*newSize[1]),
-					fixtures=b2FixtureDef(
-							shape=b2PolygonShape(box=newSize)
-						)
-			)
-				
-			# Connect new body to its sun
-			self.joints[word_k] = self.world.CreateJoint(
-				b2DistanceJointDef(
-					frequencyHz = self.frequency,
-					dampingRatio = self.damping,
-					bodyA=self.sun[word_k],
-					bodyB=self.bodies[word_k],
-					localAnchorA=(0,0),
-					localAnchorB=(0,0),
-					length = 0.5
-				)
-			)	
+			# Re-create fixture
+			self.bodies[word_k].DestroyFixture(self.fixtures[word_k])
+			self.fixtures[word_k] = None
+			self.fixtures[word_k] = self.bodies[word_k].CreateFixture(
+					b2FixtureDef(shape=b2PolygonShape(box=newSize)))
 			
 			# Redraw word in new shape
 			pos = self.renderer.to_screen(self.bodies[word_k].position);	
@@ -359,8 +374,6 @@ class WordSwarm (Framework):
 			pygame.image.save(self.screen, 
 					self.saveFolder + int(self.frameN).__format__('')
 					+ '.png')
-			
-		
 		
 		Framework.Step(self, settings);
 			

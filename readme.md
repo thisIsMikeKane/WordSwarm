@@ -39,18 +39,13 @@ Currently only tested and developed for Windows. The Beautiful Soup, Pyglet, PyG
 * PyBox2D - Used for physics and clash detection of words in swarm. Tested with `Box2D-2.3b0.win32-py2.7.exe` available from https://code.google.com/p/pybox2d/downloads/list
 
 ##Usage
-The following example describes how to create a WordSwarm (e.g. NSF Award Archive or MIT Technology Review)
+The following example describes how to create a WordSwarm using the AAAS Science Magazine as an example corpus
 
 1. Install WinPython and all the dependencies listed above
 2. Open an instance of `WinPython Command Prompt.exe`
 	a. Change the directory `> cd <WordSwarm Directory>/1-Preprocessing/`
-3. Run a scraper to parse source data into a format for later nGram calculations with the following command: `> python Scraper_<scraper name>.py`. 
+3. Run a scraper to parse source data into a format for later nGram calculations with the following command: `> python Scraper_Science.py`. 
 	A. This will create a binary (pickle) file of all the articles and timestamps: `1-Preprocessing\article_data.out`
-	B. The MIT Tech. review scraper is named `Scraper_MIT_TECH_REVIEW.py`
-		- The MIT Tech Review data will automatically be scraped from their website and cached locally
-	C. The NSF Award Archive scraper is named `Scraper_NSF.py`
-		- The NSF data must first be downloaded (from: http://www.nsf.gov/awardsearch/download.jsp) and unzipped to `1-Preprocessing/NSF/`
-		- Warning with the NSF dataset: it is >1GB, and the current version of WordSwarm stores the entire dataset in RAM. Therefore you will probably need >4GB of RAM to scrape, pre-process, and process this large dataset.
 4. Run the processor `> python Processor.py` which will take the previously created binary file, copy text into bins for each date range, run the nGram calculation in each date range, then return a CSV file to `2-WordSwarm\nGramOut<Date_Ttime>.csv`. You can modify the beginning of `Processor.py` with the following options:
 	- `win = 90` This sets the width of each date-range to 90 days
 	- `lap = 30` This sets each date-range to increment by 30 days

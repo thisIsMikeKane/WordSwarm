@@ -56,7 +56,6 @@ createBinFiles = True # Set to false for debugging
 class Article:
 	text = '';
 	date = ''; 
-articles = []; # Array of articles retrieved by scraper
 
 class nGram:
 	word = '';
@@ -72,6 +71,7 @@ pkl_file = open(scraperOutFN, 'rb');
 articles = pickle.load(pkl_file);
 pkl_file.close();
 print('Successfully imported %d articles' % len(articles))
+articles = articles[0:-1]
 
 # Remove blacklisted words from articles
 remove = '|'.join(WordBlacklist);
@@ -108,8 +108,8 @@ dateSk = dateS; # Start date in current date-window
 dateEk = dateS + datetime.timedelta(win); # End date in current date-window
 fName = []; # List of file names for each date-window
 fSize = []; # Number of words found in all articles within date-window
-fName.append((dateSk + datetime.timedelta(win/2)).\
-		strftime('./nGramInput/%Y%m%d.txt'));
+fDate = (dateSk + datetime.timedelta(win/2))
+fName.append('./nGramInput/%04d%02d%02d.txt'%(fDate.year,fDate.month,fDate.day))
 fSize.append(0)
 print(fName[-1]);
 if createBinFiles: f = open(fName[-1],'w');
@@ -146,8 +146,9 @@ for aN1 in range(0,len(articles)):
 				if createBinFiles: f.close();
 				dateSk += datetime.timedelta(lap);
 				dateEk += datetime.timedelta(lap);
-				fName.append((dateSk + datetime.timedelta(win/2)).\
-						strftime('./nGramInput/%Y%m%d.txt'));
+				fDate = (dateSk + datetime.timedelta(win/2))
+				fName.append('./nGramInput/%04d%02d%02d.txt'%(
+						fDate.year,fDate.month,fDate.day))
 				fSize.append(0)
 				print(fName[-1]);
 				if createBinFiles: f = open(fName[-1],'w');
@@ -252,6 +253,7 @@ for topWordN in range(0, topN):
 	for winN in range(0,len(fName)):
 		f.write(repr(dicNCounts[winN]) + ',');			
 	
+	# Remove top word from diction to find next top
 	del dic[topWord]			
 
 # Close output CSV file

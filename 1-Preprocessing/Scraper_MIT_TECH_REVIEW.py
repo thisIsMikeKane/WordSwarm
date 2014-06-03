@@ -39,7 +39,7 @@ articles = [];
 baseURL = 'http://www.technologyreview.com/energy/stream/page/';
 
 # Process HTML from each page
-for k in range(1,245+1):
+for k in range(1,250+1):
 
 	# Download HTML and read into Soup
     response = urllib2.urlopen(baseURL + '%s' % k);
