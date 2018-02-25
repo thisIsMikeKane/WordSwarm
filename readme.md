@@ -1,4 +1,5 @@
-# WordSwarm <img src=/wordSwarm_dark.png?raw=true width=150 align="right">
+# WordSwarm 
+<img src=/wordSwarm_dark.png?raw=true width=150 align="right">
 Create an animated word cloud that helps visualize the variation
 of word frequency in a time-series of 'articles'.
 [Check out some example WordSwarms on YouTube](https://www.youtube.com/playlist?list=PLW9BhSPL6nfRFieaT0mqaAiZhA1ZFRzWX)
