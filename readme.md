@@ -33,10 +33,10 @@ The programs in here are used to convert the frames saved by WordSwarm using the
 ## Dependencies
 Currently only tested and developed for Windows. The Beautiful Soup, Pyglet, PyGame, and PyBox2D modules can be installed using the WinPython Control Panel following [these instructions](https://code.google.com/p/winpython/wiki/ControlPanel)
 
-* Python - Tested with [WinPython 32-bit `v2.7.6`](http://sourceforge.net/projects/winpython/files/WinPython&95;2.7/2.7.6.4)
+* Python - Tested with [WinPython 32-bit `v2.7.6.4`](https://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/)
 * Beautiful Soup - For parsing HTML. Tested with [`v4.3.2`](http://www.crummy.com/software/BeautifulSoup/#Download)
-* Pyglet - Windowing and multimedia library. Tested with [`v1.1.4`](http://pyglet.googlecode.com/files/pyglet-1.1.4.zip). (May not actually be required)
-* PyGame - For creating the animations. Tested with `pygame-1.9.2a0.win32-py2.7.exe` available from [Christoph Gohlke site](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pygame) 
+* Pyglet - Windowing and multimedia library. Tested with [`v1.1.4`](https://code.google.com/archive/p/pyglet/downloads). (May not actually be required)
+* PyGame - For creating the animations. Tested with [`pygame-1.9.2a0.win32-py2.7.exe`](https://github.com/asweigart/inventwithpythondotcom/tree/master/static) 
 * PyBox2D - Used for physics and clash detection of words in swarm. Tested with `Box2D-2.3b0.win32-py2.7.exe` available from https://code.google.com/p/pybox2d/downloads/list
 
 ## Usage

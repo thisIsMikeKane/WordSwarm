@@ -159,6 +159,7 @@ class WordSwarm (Framework):
 				
 			elif opt in ("-t"):
 			
+			
 				print('WordSwarm title: %s' % arg)
 				self.name = arg
 				
@@ -296,6 +297,7 @@ class WordSwarm (Framework):
 		
 		progress = ( (self.nGrams.dates[date_k] - self.nGrams.dates[0]).total_seconds() /
 				(self.nGrams.dates[-1] - self.nGrams.dates[0]).total_seconds() )
+		
 		pos = (top[0] + 1, int((bot[1] - top[1]) * progress + top[1]) )
 		pygame.draw.circle(self.screen, color, pos, 8)
 				

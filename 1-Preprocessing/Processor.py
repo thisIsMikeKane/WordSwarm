@@ -42,9 +42,9 @@ import string # For parsing output string of text2ngram
 import operator # For sorting class arrays
 
 # Options
-win = 90; # Days to average articles over
-lap = 30; # Overlap in windows 
-topN = 500; # Number of most frequent words to use in final table
+win = 7; # Days to average articles over
+lap = 14; # Overlap in windows 
+topN = 300; # Number of most frequent words to use in final table
 minFreq = 2; # Minimum frequency with which a word must show up to be counted
 absCount = False # Generate ngrams based on absolute count or relative frequency
 
@@ -85,6 +85,8 @@ if createBinFiles:
 		if (aN % 1000) == 0:
 			print('Cleaned upto %s' % articles[aN].date.__str__())
 		articles[aN].text = re.sub(r'[^\w\']', ' ', articles[aN].text.upper());
+		articles[aN].text = re.sub("[0-9]", ' ', articles[aN].text.upper());
+		articles[aN].text = re.sub("\w[A-Za-z]*\'.?\w", ' ', articles[aN].text);
 		articles[aN].text = regex.sub("", articles[aN].text);	
 	print('Done cleaning articles')
 
@@ -197,7 +199,7 @@ for fN in range(0,len(fName)):
 			out[k] = ''.join(filter(lambda x: x in string.printable, out[k]));
 			
 			# Extract word and count
-			word = re.sub(r' [0-9]*$', '', out[k]);
+			word = re.sub(r' [0-9]*$', '', out[k]).encode('ascii');
 			count = float(re.findall(r'[0-9]*$',out[k])[0]);
 			
 			# If word was found add it to output

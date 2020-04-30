@@ -2,5 +2,6 @@
 /1-Preprocessing/*/*
 /1-Preprocessing/*.out
 /2-WordSwarm/*.csv
-/3-Postprocessing/frames/*
+/2-WordSwarm/*.xlsx
+/3-Postprocessing/frames*
 /3-Postprocessing/*.mp4
