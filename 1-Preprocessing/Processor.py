@@ -80,14 +80,31 @@ regex = re.compile(r'\b('+remove+r')\b', flags=re.IGNORECASE)
 # Make upper-case and remove non-alphanumeric 
 #  (except apostrophes for contractions)
 if createBinFiles: 
+
 	print('Cleaning blacklist of words from articles')
+	
 	for aN in range(0,len(articles)):
+	
 		if (aN % 1000) == 0:
 			print('Cleaned upto %s' % articles[aN].date.__str__())
-		articles[aN].text = re.sub(r'[^\w\']', ' ', articles[aN].text.upper());
+		
+		# Remove URLs
+		articles[aN].text = re.sub(r'HTTPS?:\/\/.+?(\s)', ' ', articles[aN].text.upper() + ' '); 
+		
+		# Remove special characters (i.e. &amp;)
+		articles[aN].text = re.sub(r'&[^\s]+?\;', ' ', articles[aN].text.upper()); 
+		
+		# Remove non-word characters except mentions (@) and hashtags (#)
+		articles[aN].text = re.sub(r'[^\w\'\#\@]', ' ', articles[aN].text.upper()); 
+		
+		# Remove numbers
 		articles[aN].text = re.sub("[0-9]", ' ', articles[aN].text.upper());
+		
+		# Remove conjunctions 
 		articles[aN].text = re.sub("\w[A-Za-z]*\'.?\w", ' ', articles[aN].text);
+		
 		articles[aN].text = regex.sub("", articles[aN].text);	
+		
 	print('Done cleaning articles')
 
 # Organize articles by date
