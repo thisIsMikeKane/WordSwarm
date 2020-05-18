@@ -1,3 +1,4 @@
+.idea/*
 *.pyc
 /1-Preprocessing/*/*
 /1-Preprocessing/*.out
